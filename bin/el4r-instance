@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-#    el4r - EmacsLisp for Ruby 
+#    el4r - EmacsLisp for Ruby
 #    Copyright (C) 2005 rubikitch <rubikitch@ruby-lang.org>
 #    Version: $Id: el4r-instance 1376 2006-09-21 05:50:24Z rubikitch $
 
@@ -167,14 +167,14 @@ module El4r
     def []=(x,y)
       check x
       x < 0 and x = @length+x
-      
+
       @ary[x]=y
       instance.aset(self, x, y)
     end
 
     def to_a_func () :el4r_vector_to_rubyary end
   end #/ELVector
-  
+
 
   # EmacsLisp objects stock.
   class ELRubyObjectStock
@@ -333,7 +333,7 @@ module El4r
       el4r_lisp_eval(El4r.name_rb2el(name.to_s))
     end
     alias getq symbol_value
-    
+
     def setq(name, value)
       el4r_lisp_eval("(setq #{El4r.name_rb2el(name.to_s)} #{el4r_ruby2lisp(value)})")
     end
@@ -373,7 +373,7 @@ module El4r
 
     # Create a new buffer with some initialization.
     # With block, newbuf execute it by the context of the generated buffer.
-    # 
+    #
     # A parameter is a Hash.
     # :name      :: buffer-name
     # :file      :: find-file-noselect / insert-file-contents [with :name]
@@ -396,7 +396,7 @@ module El4r
         # TODO: coding-system
         x[:name]              and erase_buffer
         x[:name] && x[:file]  and insert_file_contents(x[:file])
-        x[:contents]          and insert x[:contents].to_s 
+        x[:contents]          and insert x[:contents].to_s
         check[:line,Integer]  and goto_line x[:line]
         check[:point,Integer] and goto_char x[:point]
         block_given?          and yield
@@ -470,7 +470,7 @@ module El4r
       mode = el(mode)
       subfuncexpr = "#{mode.expression}--el4r-function"
       block ||= lambda{}
-      defun(subfuncexpr, &block) 
+      defun(subfuncexpr, &block)
       args << el("(#{subfuncexpr})")
 
       funcall_internal(funcexpr, mode, *args)
@@ -527,7 +527,7 @@ module El4r
     end
 
     def write(s)
-      @instance.instance_eval do 
+      @instance.instance_eval do
         princ(s.to_s, get_buffer_create(conf.output_buffer))
       end
       nil
@@ -551,7 +551,7 @@ module El4r
     # If +true+, verbose log output.
     attr_accessor :el4r_is_debug
 
-    # el4r_load evals an EmacsRuby script from this directory. 
+    # el4r_load evals an EmacsRuby script from this directory.
     attr_accessor :el4r_homedir
 
     # settings by ~/.el4rrc.rb
@@ -571,7 +571,7 @@ module El4r
       @el4r_garbage_elobj_ids = []
 
       @el4r_output = El4rOutput.new self
-      
+
       log = ENV["EL4R_LOG"]
       @log = case log
              when "stderr"; STDERR
@@ -652,7 +652,7 @@ module El4r
       when ELObject; obj.to_lisp
       when ELExpression; obj.expression
       else; el4r_rubyobj_stock.obj2lisp(obj)
-      end      
+      end
     end
 
     # Convert a Ruby Proc into EmacsLisp
@@ -665,7 +665,7 @@ module El4r
       end
       "(#{forms.join(' ')})"
     end
-    
+
     def el4r_args_to_lispseq(*args, &block)
       elargs = args
       elargs << block if block_given?
@@ -703,7 +703,7 @@ module El4r
       msg ||= "*backtrace*"
       el4r_log "#{msg}\n#{ErrorUtils.backtrace_message(caller(2))}"
     end
-    
+
     # --------------------------------
     # Methods for internal use
 
@@ -711,7 +711,7 @@ module El4r
     def el4r_boot__noinit
       logbuf = get_buffer_create conf.log_buffer
       elvar.el4r_log_path = el4r_log_io.path
-      
+
       el4r_lisp_eval('(defun el4r-show-log () (interactive)
                        (with-current-buffer (get-buffer-create el4r-log-buffer)
                          (setq buffer-read-only nil)
@@ -755,7 +755,7 @@ module El4r
     def el4r_readfile(file)
       File.open(file) { |io| io.read || ""; }
     end
-    
+
     def el4r_wait_expr_loop
       el4r_wait_expr until @emacs_in.eof?
     end
@@ -835,7 +835,7 @@ module El4r
         yield
       ensure
         @call_level -= 1
-        @call_level <= @el_backtrace_reset_threshold and @el_backtrace = [] 
+        @call_level <= @el_backtrace_reset_threshold and @el_backtrace = []
       end
     end
 
@@ -886,32 +886,35 @@ module El4r
     # Install el4r version of Test::Unit.
     def el4r_install_test_unit_testrunner
       require 'test/unit'
-      require 'test/unit/ui/console/testrunner'
       require 'stringio'
 
-      eval <<-EOS
-      module ::Test
-        module Unit
-          module UI
-            module Console
-              class El4rTestRunner < TestRunner
-                OUTPUT = StringIO.new
+      unless RUBY_VERSION.to_f >= 1.9
+        require 'test/unit/ui/console/testrunner'
 
-                def initialize(*args)
-                  super
-                  @io = OUTPUT
+        eval <<-EOS
+        module ::Test
+          module Unit
+            module UI
+              module Console
+                class El4rTestRunner < TestRunner
+                  OUTPUT = StringIO.new
+
+                  def initialize(*args)
+                    super
+                    @io = OUTPUT
+                  end
                 end
               end
             end
-          end
 
-          class TestCase
-            include ElMixin
-            extend  ElMixin
+            class TestCase
+              include ElMixin
+              extend  ElMixin
+            end
           end
         end
+        EOS
       end
-      EOS
     end
 
 
@@ -991,7 +994,7 @@ module El4r
           nil
         end #/defun
       end #/if
-      
+
     end #/def
 
   end #/ELInstance
@@ -1029,7 +1032,7 @@ class ElApp
 
   # Run the application.
   def self.run(params={})
-    obj = new(params)    
+    obj = new(params)
     (@@instances[self] ||= []) << obj # preserve from GC
     process_defun(obj)
     obj
@@ -1067,7 +1070,7 @@ class ElApp
   extend SingleForwardable
 
   # Import EmacsLisp (and El4r::ELMethodsMixin) functions within class definition.
-  
+
   def self.import_function(*funcs)
     def_delegators :el4r, *funcs
   end
